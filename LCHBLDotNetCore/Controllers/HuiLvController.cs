@@ -16,6 +16,32 @@ namespace LCHBLDotNetCore.Controllers
     [ApiController]
     public class HuiLvController : ControllerBase
     {
+        [Route("api/PSBC/GetAllProducts")]
+        public List<PSBC> PSBC()
+        {
+            var cache = GetCacheObject<PSBC>(20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.psbc.com/cms/queryExchange.do" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").
+                Where(t => t.TextContent.IndexOf("货币名称") > 0).LastOrDefault().QuerySelectorAll("tr").
+                Where(t => t.TextContent.IndexOf("货币名称") < 0).Take(7).Select(t => new PSBC()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent.Replace("\n","").Replace(" ",""),
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0,2)).Replace("\n", "").Replace(" ", ""),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    mcj= decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    jzj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
         [Route("api/ICBC/GetAllProducts")]
         public List<ICBC> ICBC()
         {
