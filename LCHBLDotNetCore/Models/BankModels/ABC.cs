@@ -14,7 +14,7 @@ namespace LCHBLDotNetCore.Models.BankModels
         public string xcmrhl { get; set; }//mchl
         public string picUrl2x { get; set; }
         public string picUrl3x { get; set; }
-        public string PublishTime { get; set; }
+        public DateTime updatetime { get; set; }
     }
     public class TableItem
     {
