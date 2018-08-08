@@ -8,15 +8,16 @@ using LCHBLDotNetCore.Models.BankModels;
 using LCHBLDotNetCore.Other;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LCHBLDotNetCore.Controllers
 {
-    //[Route("api/[controller]")]
+    //[Route("api/[controller]/[action]")]
     [ApiController]
     public class HuiLvController : ControllerBase
     {
         [Route("api/BOC/GetAllProducts")]
-        public List<BOC> GetAllProducts()
+        public List<BOC> BOC()
         {
             var cache = GetCacheObject<BOC>(20);
             var data = cache.GetData();
@@ -25,6 +26,7 @@ namespace LCHBLDotNetCore.Controllers
             HttpHelper httpHelper = new HttpHelper();
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.boc.cn/sourcedb/whpj/index.html" });
             HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
             var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").
                 Where(t => t.TextContent.IndexOf("货币名称") > 0).FirstOrDefault().QuerySelectorAll("tr").
                 Where(t => t.TextContent.IndexOf("货币名称") < 0).Select(t => new BOC()
@@ -35,8 +37,31 @@ namespace LCHBLDotNetCore.Controllers
                     xhmcj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent == "" ? "0" : t.QuerySelectorAll("td")[3].TextContent),
                     xcmcj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent == "" ? "0" : t.QuerySelectorAll("td")[4].TextContent),
                     zhzsj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent == "" ? "0" : t.QuerySelectorAll("td")[5].TextContent),
-                    updatetime=DateTime.Now,
+                    hbsx=CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0,2)),
+                    updatetime = dt,
                 }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/ABC/GetAllProducts")]
+        public List<ABC> ABC()
+        {
+            var cache = GetCacheObject<ABC>(20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://ewealth.abchina.com/app/data/api/DataService/ExchangeRateV2", Accept = "application/json, text/javascript, */*; q=0.01" });
+            var jsonResult = JsonConvert.DeserializeObject<ABCRoot>(htmlResult.Html);
+            var result= jsonResult.Data.Table.Select(t => new ABC()
+            {
+                hbmc = t.CurrName.Substring(0, t.CurrName.IndexOf("(")),
+                hbsx = t.CurrName.Substring(t.CurrName.IndexOf("(")),
+                mrhl=t.BuyingPrice,
+                mchl=t.SellPrice,
+                xcmrhl=t.CashBuyingPrice,
+                PublishTime=t.PublishTime,
+            }).ToList();
             cache.AddData(result);//添加缓存
             return result;
         }

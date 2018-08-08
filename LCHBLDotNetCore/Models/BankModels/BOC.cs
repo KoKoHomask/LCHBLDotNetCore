@@ -13,7 +13,7 @@ namespace LCHBLDotNetCore.Models.BankModels
         public int ID { get; set; }
         public string hbmc { get; set; }
         // public string currency { get; set; }
-        public decimal hbsx { get; set; }
+        public string hbsx { get; set; }
         public decimal xhmrj { get; set; }
         public decimal xcmrj { get; set; }
         public decimal xhmcj { get; set; }
