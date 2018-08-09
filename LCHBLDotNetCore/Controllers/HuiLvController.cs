@@ -9,6 +9,7 @@ using LCHBLDotNetCore.Other;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Xml;
 
 namespace LCHBLDotNetCore.Controllers
 {
@@ -16,6 +17,34 @@ namespace LCHBLDotNetCore.Controllers
     [ApiController]
     public class HuiLvController : ControllerBase
     {
+        [Route("api/CCB/GetAllProducts")]
+        public List<CCB> CCB()
+        {
+            var cache = GetCacheObject<CCB>(20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://forex1.ccb.com/cn/home/news/jshckpj_new.xml", Accept = "application/json, text/javascript, */*; q=0.01" });
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(htmlResult.Html.Replace("-name", "name"));
+            string jsonStr= JsonConvert.SerializeXmlNode(doc);
+            var jsonResult = JsonConvert.DeserializeObject<CCBRoot>(jsonStr);
+            DateTime dateTime = DateTime.Now;
+            var result = jsonResult.ReferencePriceSettlements.ReferencePriceSettlement.Select(t => new CCB()
+            {
+                hbmc= CurrencyAcronyms.getCCBHBMC( t.Ofrd_Ccy_CcyCd),
+                hbsx=CurrencyAcronyms.getKHAcronyms(CurrencyAcronyms.getCCBHBMC(t.Ofrd_Ccy_CcyCd).Substring(0,2)),
+                xhmrj=decimal.Parse(t.BidRateOfCcy),
+                xhmcj= decimal.Parse(t.OfrRateOfCcy),
+                xcmrj=decimal.Parse(t.BidRateOfCash),
+                xcmcj=decimal.Parse(t.OfrRateOfCcy),
+                updatetime = dateTime,
+            }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+
         [Route("api/PSBC/GetAllProducts")]
         public List<PSBC> PSBC()
         {

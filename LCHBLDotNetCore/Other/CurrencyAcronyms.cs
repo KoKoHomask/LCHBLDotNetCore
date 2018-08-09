@@ -7,6 +7,33 @@ namespace LCHBLDotNetCore.Other
 {
     public class CurrencyAcronyms
     {
+        public static string getCCBHBMC(string ccbCode)
+        {
+            switch (ccbCode)
+            {
+                case "840": return "美元";
+                case "978": return "欧元";
+                case "826": return "英镑";
+                case "392": return "日元";
+                case "344": return "港币";
+                case "036": return "澳大利亚元";
+                case "124": return "加拿大元";
+                case "756": return "瑞士法郎";
+                case "702": return "新加坡元";
+                case "208": return "丹麦克朗";
+                case "578": return "挪威克朗";
+                case "752": return "瑞典克朗";
+                case "410": return "韩元";
+                case "554": return "新西兰元";
+                case "446": return "澳门元";
+                case "710": return "南非兰特";
+                case "764": return "泰铢";
+                case "458": return "马来西亚林吉特";
+                case "643": return "俄罗斯卢布";
+                case "398": return "哈萨克斯坦坚戈";
+            }
+            return "未知";
+        }
         public static string getKHAcronyms(string currencyName)
         {
             return "(" + getAcronyms(currencyName) + ")";
