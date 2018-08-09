@@ -17,7 +17,7 @@ namespace LCHBLDotNetCore.Controllers
     [ApiController]
     public class HuiLvController : ControllerBase
     {
-        [Route("api/exchangeRateController/GetER")]
+        [Route("api/exchangeRate/GetER")]
         public List<AllHuiLv> GetER()
         {
             List<AllHuiLv> lst = new List<AllHuiLv>();
