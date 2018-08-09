@@ -32,7 +32,7 @@ namespace LCHBLDotNetCore.Controllers
             var jsonResult = JsonConvert.DeserializeObject<CCBRoot>(jsonStr);
             DateTime dateTime = DateTime.Now;
             var result = jsonResult.ReferencePriceSettlements.ReferencePriceSettlement.Select(t => new CCB()
-            {
+            { 
                 hbmc= CurrencyAcronyms.getCCBHBMC( t.Ofrd_Ccy_CcyCd),
                 hbsx=CurrencyAcronyms.getKHAcronyms(CurrencyAcronyms.getCCBHBMC(t.Ofrd_Ccy_CcyCd).Substring(0,2)),
                 xhmrj=decimal.Parse(t.BidRateOfCcy),
