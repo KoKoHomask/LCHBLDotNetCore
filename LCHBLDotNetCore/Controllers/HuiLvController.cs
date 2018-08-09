@@ -17,10 +17,41 @@ namespace LCHBLDotNetCore.Controllers
     [ApiController]
     public class HuiLvController : ControllerBase
     {
+        [Route("api/exchangeRateController/GetER")]
+        public List<AllHuiLv> GetER()
+        {
+            List<AllHuiLv> lst = new List<AllHuiLv>();
+            lst.Add(new AllHuiLv()
+            {
+                 bankName="建设银行",
+                  bankPoperty=CCB(),
+            });
+            lst.Add(new AllHuiLv()
+            {
+                bankName = "工商银行",
+                bankPoperty = ICBC(),
+            });
+            lst.Add(new AllHuiLv()
+            {
+                bankName = "邮政银行",
+                bankPoperty = PSBC(),
+            });
+            lst.Add(new AllHuiLv()
+            {
+                bankName = "中国银行",
+                bankPoperty = BOC(),
+            });
+            lst.Add(new AllHuiLv()
+            {
+                bankName = "农业银行",
+                bankPoperty = ABC(),
+            });
+            return lst;
+        }
         [Route("api/CCB/GetAllProducts")]
         public List<CCB> CCB()
         {
-            var cache = GetCacheObject<CCB>(20);
+            var cache = GetCacheObject<CCB>("CCB",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
@@ -48,7 +79,7 @@ namespace LCHBLDotNetCore.Controllers
         [Route("api/PSBC/GetAllProducts")]
         public List<PSBC> PSBC()
         {
-            var cache = GetCacheObject<PSBC>(20);
+            var cache = GetCacheObject<PSBC>("PSBC",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
@@ -74,7 +105,7 @@ namespace LCHBLDotNetCore.Controllers
         [Route("api/ICBC/GetAllProducts")]
         public List<ICBC> ICBC()
         {
-            var cache = GetCacheObject<ICBC>(20);
+            var cache = GetCacheObject<ICBC>("ICBC",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
@@ -100,7 +131,7 @@ namespace LCHBLDotNetCore.Controllers
         [Route("api/BOC/GetAllProducts")]
         public List<BOC> BOC()
         {
-            var cache = GetCacheObject<BOC>(20);
+            var cache = GetCacheObject<BOC>("BOC",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
@@ -127,7 +158,7 @@ namespace LCHBLDotNetCore.Controllers
         [Route("api/ABC/GetAllProducts")]
         public List<ABC> ABC()
         {
-            var cache = GetCacheObject<ABC>(20);
+            var cache = GetCacheObject<ABC>("ABC",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
@@ -152,9 +183,9 @@ namespace LCHBLDotNetCore.Controllers
         /// 获取缓存对象
         /// </summary>
         /// <returns></returns>
-        public EasyCache<List<T>> GetCacheObject<T>(int? minutes = null)
+        public EasyCache<List<T>> GetCacheObject<T>(string key,int? minutes = null)
         {
-            var key = Request.Path.Value + Request.QueryString.Value;
+            //var key = Request.Path.Value + Request.QueryString.Value;
             var time = DateTime.Now.AddMinutes(minutes ?? 10) - DateTime.Now;//缓存10分钟
             EasyCache<List<T>> obj = new EasyCache<List<T>>(key, time);
             return obj;
