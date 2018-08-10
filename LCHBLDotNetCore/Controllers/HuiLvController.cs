@@ -59,7 +59,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.bankcomm.com/BankCommSite/simple/cn/whpj/queryExchangeResult.do?type=simple" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll(".data").Select(t => new BCM()
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tr.data").Select(t => new BCM()
                 {
                     hbmc = t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")),
                     hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")).Substring(0,2)),
