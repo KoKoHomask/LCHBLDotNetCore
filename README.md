@@ -8,3 +8,8 @@
 /api/abc/getallproducts<br />
 /api/bcm/getallproducts<br />
 /api/exchangeRateController/GetER
+
+新增民生银行、招商银行、北京银行<br />
+/api/cmbc/getallproducts<br />
+/api/cmb/getallproducts<br />
+/api/bob/getallproducts<br />

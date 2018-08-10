@@ -7,6 +7,96 @@ namespace LCHBLDotNetCore.Other
 {
     public class CurrencyAcronyms
     {
+        public static string 缩写转货币名(string sx)
+        {
+            switch (sx)
+            {
+                case "CNY": return "人民币";
+                case "RMB":
+                    return "人民币";
+                case "USD":
+                    return "美元 ";
+                case "ATS":
+                    return "奥地利先令 ";
+                case "AUD":
+                    return "澳元 ";
+                case "BEF":
+                    return "比利时法郎 ";
+                case "BRL":
+                    return "巴西雷亚尔 ";
+                case "CAD":
+                    return "加元 ";
+                case "CHF":
+                    return "瑞郎 ";
+                case "CLP":
+                    return "智利比索 ";
+                case "CZK":
+                    return "捷克克朗 ";
+                case "DEM":
+                    return "德国马克 ";
+                case "DKK":
+                    return "丹麦克朗 ";
+                case "ESP":
+                    return "西班牙比塞塔 ";
+                case "EUR":
+                    return "欧元 ";
+                case "FIM":
+                    return "芬兰马克 ";
+                case "FRF":
+                    return "法国法郎 ";
+                case "GBP":
+                    return "英镑 ";
+                case "HKD":
+                    return "港币 ";
+                case "HUF":
+                    return "匈牙利福林 ";
+                case "IDR":
+                    return "印度尼西亚盾 ";
+                case "INR":
+                    return "印度卢比 ";
+                case "ITL":
+                    return "意大利里拉 ";
+                case "JPY":
+                    return "日元 ";
+                case "KER":
+                    return "韩元 ";
+                case "MXN":
+                    return "墨西哥比索 ";
+                case "MYR":
+                    return "马来西亚元 ";
+                case "NLG":
+                    return "荷兰盾 ";
+                case "NOK":
+                    return "挪威克朗 ";
+                case "NZD":
+                    return "新西兰元 ";
+                case "PHP":
+                    return "菲律宾比索 ";
+                case "PLN":
+                    return "波兰兹罗提 ";
+                case "PTE":
+                    return "葡萄牙埃斯库多 ";
+                case "RUB":
+                    return "俄罗斯卢布 ";
+                case "SAR":
+                    return "沙特里亚尔 ";
+                case "SEK":
+                    return "瑞典克朗 ";
+                case "SGD":
+                    return "新加坡元 ";
+                case "THB":
+                    return "泰铢 ";
+                case "TWD":
+                    return "台币 ";
+                case "VEF":
+                    return "强势玻利瓦尔 ";
+                case "VND":
+                    return "越南盾 ";
+                case "ZAR":
+                    return "南非兰特 ";
+            }
+            return "";
+        }
         public static string getCCBHBMC(string ccbCode)
         {
             switch (ccbCode)

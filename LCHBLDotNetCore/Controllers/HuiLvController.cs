@@ -21,32 +21,94 @@ namespace LCHBLDotNetCore.Controllers
         public List<AllHuiLv> GetER()
         {
             List<AllHuiLv> lst = new List<AllHuiLv>();
-            lst.Add(new AllHuiLv(){
-                 bankName="建设银行",
-                  bankPoperty=CCB(),
-            });
-            lst.Add(new AllHuiLv(){
-                bankName = "工商银行",
-                bankPoperty = ICBC(),
-            });
-            lst.Add(new AllHuiLv(){
-                bankName = "邮政银行",
-                bankPoperty = PSBC(),
-            });
-            lst.Add(new AllHuiLv(){
-                bankName = "中国银行",
-                bankPoperty = BOC(),
-            });
-            lst.Add(new AllHuiLv(){
-                bankName = "农业银行",
-                bankPoperty = ABC(),
-            });
-            lst.Add(new AllHuiLv()
-            {
-                bankName = "交通银行",
-                bankPoperty = BCM(),
-            });
+            lst.Add(new AllHuiLv() { bankName = "建设银行", bankPoperty = CCB(), });
+            lst.Add(new AllHuiLv() { bankName = "工商银行", bankPoperty = ICBC(), });
+            lst.Add(new AllHuiLv() { bankName = "邮政银行", bankPoperty = PSBC(), });
+            lst.Add(new AllHuiLv() { bankName = "中国银行", bankPoperty = BOC(), });
+            lst.Add(new AllHuiLv() { bankName = "农业银行", bankPoperty = ABC(), });
+            lst.Add(new AllHuiLv() { bankName = "交通银行", bankPoperty = BCM(), });
+            lst.Add(new AllHuiLv() { bankName = "民生银行", bankPoperty = CMBC(), });
+            lst.Add(new AllHuiLv() { bankName = "招商银行", bankPoperty = CMB(), });
+            lst.Add(new AllHuiLv() { bankName = "北京银行", bankPoperty = BOB(), });
             return lst;
+        }
+        [Route("api/BOB/GetAllProducts")]
+        public List<BOB> BOB()
+        {
+            var cache = GetCacheObject<BOB>("BOB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.bankofbeijing.com.cn/personal/whpj.aspx" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody")
+                .Where(t => t.TextContent.IndexOf("现汇买入价") > 0).LastOrDefault().QuerySelectorAll("tr")
+                .Where(t => t.TextContent.IndexOf("现汇买入价") < 0)
+                .Select(t => new BOB()
+                {
+                    hbmc = t.QuerySelectorAll("td")[1].TextContent.Replace("/人民币", ""),
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[1].TextContent.Replace("/人民币", "").Substring(0, 2)),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    mcj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+                    zjj = decimal.Parse(t.QuerySelectorAll("td")[6].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/CMB/GetAllProducts")]
+        public List<CMB> CMB()
+        {
+            var cache = GetCacheObject<CMB>("CMB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://fx.cmbchina.com/hq/" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.data").FirstOrDefault().QuerySelectorAll("tr")
+                .Where(t => t.TextContent.IndexOf("交易") < 0)
+                .Select(t => new CMB()
+                 {
+                     hbmc = t.QuerySelectorAll("td")[0].TextContent.Replace("\n","").Replace(" ",""),
+                     hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Replace("\n", "").Replace(" ", "").Substring(0, 2)),
+                     xhmcj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                     xcmcj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                     xhmrj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+                     xcmrj = decimal.Parse(t.QuerySelectorAll("td")[6].TextContent),
+                     updatetime = dt,
+                 }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/CMBC/GetAllProducts")]
+        public List<CMBC> CMBC()
+        {
+            var cache = GetCacheObject<CMBC>("CMBC", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.cmbc.com.cn/gw/po_web/queryExRateByForex.do",
+                Method = "POST", Postdata= "cxfg=1&domesticCurrency=RMB",
+                ContentType = "application/x-www-form-urlencoded",
+            });
+            var jsonResult = JsonConvert.DeserializeObject<CMBCRoot>(htmlResult.Html);
+            DateTime dateTime = DateTime.Now;
+            var result = jsonResult.result.Select(t => new CMBC()
+            {
+                hbmc = CurrencyAcronyms.缩写转货币名(t.foreignCurrency),
+                hbsx = "("+t.foreignCurrency+")",
+                xhmrj = (decimal)( t.buyPrice),
+                xhmcj = (decimal)(t.sellPrice),
+                updatetime = dateTime,
+            }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/BCM/GetAllProducts")]
         public List<BCM> BCM()
