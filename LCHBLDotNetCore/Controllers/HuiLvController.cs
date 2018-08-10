@@ -21,32 +21,56 @@ namespace LCHBLDotNetCore.Controllers
         public List<AllHuiLv> GetER()
         {
             List<AllHuiLv> lst = new List<AllHuiLv>();
-            lst.Add(new AllHuiLv()
-            {
+            lst.Add(new AllHuiLv(){
                  bankName="建设银行",
                   bankPoperty=CCB(),
             });
-            lst.Add(new AllHuiLv()
-            {
+            lst.Add(new AllHuiLv(){
                 bankName = "工商银行",
                 bankPoperty = ICBC(),
             });
-            lst.Add(new AllHuiLv()
-            {
+            lst.Add(new AllHuiLv(){
                 bankName = "邮政银行",
                 bankPoperty = PSBC(),
             });
-            lst.Add(new AllHuiLv()
-            {
+            lst.Add(new AllHuiLv(){
                 bankName = "中国银行",
                 bankPoperty = BOC(),
             });
-            lst.Add(new AllHuiLv()
-            {
+            lst.Add(new AllHuiLv(){
                 bankName = "农业银行",
                 bankPoperty = ABC(),
             });
+            lst.Add(new AllHuiLv()
+            {
+                bankName = "交通银行",
+                bankPoperty = BCM(),
+            });
             return lst;
+        }
+        [Route("api/BCM/GetAllProducts")]
+        public List<BCM> BCM()
+        {
+            var cache = GetCacheObject<BCM>("BCM", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.bankcomm.com/BankCommSite/simple/cn/whpj/queryExchangeResult.do?type=simple" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll(".data").Select(t => new BCM()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")),
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")).Substring(0,2)),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent=="-" ? "0": t.QuerySelectorAll("td")[1].TextContent),
+                    xhmcj= decimal.Parse(t.QuerySelectorAll("td")[2].TextContent == "-" ? "0" : t.QuerySelectorAll("td")[2].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent == "-" ? "0" : t.QuerySelectorAll("td")[3].TextContent),
+                    xcmcj= decimal.Parse(t.QuerySelectorAll("td")[4].TextContent == "-" ? "0" : t.QuerySelectorAll("td")[4].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/CCB/GetAllProducts")]
         public List<CCB> CCB()
