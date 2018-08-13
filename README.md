@@ -20,3 +20,5 @@
 /api/ceb/getallproducts<br />
 /api/hb/getallproducts<br />
 /api/gdb/getallproducts<br />
+
+等待添加:平安银行   恒丰银行  浙商银行    渤海银行
