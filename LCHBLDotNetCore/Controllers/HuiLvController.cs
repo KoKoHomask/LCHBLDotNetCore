@@ -34,7 +34,128 @@ namespace LCHBLDotNetCore.Controllers
             lst.Add(new AllHuiLv() { bankName = "光大银行", bankPoperty = CEB(), });
             lst.Add(new AllHuiLv() { bankName = "华夏银行", bankPoperty = HB(), });
             lst.Add(new AllHuiLv() { bankName = "广发银行", bankPoperty = GDB(), });
+            lst.Add(new AllHuiLv() { bankName = "平安银行", bankPoperty = PABC(), });
+            lst.Add(new AllHuiLv() { bankName = "兴业银行", bankPoperty = CIB(), });
+            lst.Add(new AllHuiLv() { bankName = "丰瑞银行", bankPoperty = EVERGROWING(), });
             return lst;
+        }
+        [Route("api/CZB/GetAllProducts")]
+        public List<CZB> CZB()
+        {
+            var cache = GetCacheObject<CZB>("CZB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://perbank.czbank.com/PERBANK/system/whpjInfoService_req_dispatch.jsp",
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+                Encoding =System.Text.Encoding.UTF8 });
+            HtmlParser htmlParser = new HtmlParser();
+            var getPostData = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("input").FirstOrDefault();
+            string post = getPostData.GetAttribute("name") +"="+ getPostData.GetAttribute("value");
+            string cookie = htmlResult.Cookie;
+            htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://perbank.czbank.com/PERBANK/WebBank",
+                Encoding = System.Text.Encoding.UTF8,Referer= "https://perbank.czbank.com/PERBANK/system/whpjInfoService_req_dispatch.jsp",
+                ContentType = "application/x-www-form-urlencoded",
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+                Cookie = cookie, Method="post", Postdata=post });
+            DateTime dt = DateTime.Now;
+            //var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").LastOrDefault()
+            //    .QuerySelectorAll("tr")
+            //    .Select(t => new CZB()
+            //    {
+            //        hbmc = t.QuerySelectorAll("td")[0].TextContent,
+            //        hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, 2)),
+            //        xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+            //        xhmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+            //        xhmcj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+            //        zjj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+            //        updatetime = dt,
+            //    }).ToList();
+            //cache.AddData(result);//添加缓存
+            //return result;
+            return null;
+        }
+        [Route("api/EVERGROWING/GetAllProducts")]
+        public List<EVERGROWING> EVERGROWING()
+        {
+            var cache = GetCacheObject<EVERGROWING>("EVERGROWING", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.hfbank.com.cn/ucms/hfyh/jsp/gryw/whpj.jsp", });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").LastOrDefault()
+                .QuerySelectorAll("tr")
+                .Select(t => new EVERGROWING()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent,
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, 2)),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xhmcj= decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    zjj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/CIB/GetAllProducts")]
+        public List<CIB> CIB()
+        {
+            var cache = GetCacheObject<CIB>("CIB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://personalbank.cib.com.cn/pers/main/pubinfo/ifxQuotationQuery.do", });
+            htmlResult= httpHelper.GetHtml(new HttpItem() { URL = "https://personalbank.cib.com.cn/pers/main/pubinfo/ifxQuotationQuery!list.do?_search=false&dataSet.rows=80&dataSet.page=1&dataSet.sidx=&dataSet.sord=asc",
+                Cookie =htmlResult.Cookie,});
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var jsonResult = JsonConvert.DeserializeObject<CIBRoot>(htmlResult.Html);
+            DateTime dateTime = DateTime.Now;
+            var result = jsonResult.rows.Select(t => new CIB()
+            {
+                hbmc = t.cell[0],
+                hbsx = CurrencyAcronyms.getKHAcronyms(t.cell[0].Substring(0, 2)),
+                xhmrj = decimal.Parse(t.cell[3]),
+                xcmrj = decimal.Parse(t.cell[5]),
+                xhmcj = decimal.Parse(t.cell[4]),
+                xcmcj = decimal.Parse(t.cell[6]),
+                updatetime = dateTime,
+            }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/PABC/GetAllProducts")]
+        public List<PABC> PABC()
+        {
+            var cache = GetCacheObject<PABC>("PABC", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://bank.pingan.com.cn/ibp/portal/exchange/qryExchangeList.do", });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.table").FirstOrDefault().QuerySelectorAll("tbody").FirstOrDefault()
+                .QuerySelectorAll("tr").Where(t => t.TextContent.IndexOf("����ȫ��") < 0 && t.TextContent.IndexOf("货币") < 0)
+                .Select(t => new PABC()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent,
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0,2)),
+                    zjj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    mcj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    yhzjj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/GDB/GetAllProducts")]
         public List<GDB> GDB()
