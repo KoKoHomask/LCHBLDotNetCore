@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace LCHBLDotNetCore.Models.BankModels
 {
-    public class ICBC:BaseBankModel
-    {    
+    public class HB:BaseBankModel
+    {
         public decimal xhmrj { get; set; }
         public decimal xcmrj { get; set; }
-        public decimal xhmcj { get; set; }
-        public decimal xcmcj { get; set; }
+        public decimal mcj { get; set; }
+        public decimal xhzjj { get; set; }
     }
 }

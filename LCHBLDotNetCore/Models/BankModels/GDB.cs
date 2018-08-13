@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace LCHBLDotNetCore.Models.BankModels
 {
-    public class ICBC:BaseBankModel
-    {    
+    public class GDB:BaseBankModel
+    {
+        public decimal zjj { get; set; }
         public decimal xhmrj { get; set; }
         public decimal xcmrj { get; set; }
         public decimal xhmcj { get; set; }

@@ -13,7 +13,6 @@ using System.Xml;
 
 namespace LCHBLDotNetCore.Controllers
 {
-    //[Route("api/[controller]/[action]")]
     [ApiController]
     public class HuiLvController : ControllerBase
     {
@@ -30,7 +29,146 @@ namespace LCHBLDotNetCore.Controllers
             lst.Add(new AllHuiLv() { bankName = "民生银行", bankPoperty = CMBC(), });
             lst.Add(new AllHuiLv() { bankName = "招商银行", bankPoperty = CMB(), });
             lst.Add(new AllHuiLv() { bankName = "北京银行", bankPoperty = BOB(), });
+            lst.Add(new AllHuiLv() { bankName = "浦发银行", bankPoperty = SPDB(), });
+            lst.Add(new AllHuiLv() { bankName = "中信银行", bankPoperty = CITICIB(), });
+            lst.Add(new AllHuiLv() { bankName = "光大银行", bankPoperty = CEB(), });
+            lst.Add(new AllHuiLv() { bankName = "华夏银行", bankPoperty = HB(), });
+            lst.Add(new AllHuiLv() { bankName = "广发银行", bankPoperty = GDB(), });
             return lst;
+        }
+        [Route("api/GDB/GetAllProducts")]
+        public List<GDB> GDB()
+        {
+            var cache = GetCacheObject<GDB>("GDB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.cgbchina.com.cn/searchExchangePrice.gsp", Encoding= System.Text.Encoding.UTF8});
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").FirstOrDefault()
+                .QuerySelectorAll("tr").Where(t => t.TextContent.IndexOf("����ȫ��") < 0&& t.TextContent.IndexOf("货币") < 0)
+                .Select(t => new GDB()
+                {
+                    hbmc = CurrencyAcronyms.缩写转货币名(t.QuerySelectorAll("td")[1].TextContent),
+                    hbsx = "(" + t.QuerySelectorAll("td")[1].TextContent + ")",
+                    zjj= decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
+                    xhmcj= decimal.Parse(t.QuerySelectorAll("td")[6].TextContent),
+                    xcmcj= decimal.Parse(t.QuerySelectorAll("td")[7].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/HB/GetAllProducts")]
+        public List<HB> HB()
+        {
+            var cache = GetCacheObject<HB>("HB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://sbank.hxb.com.cn/gateway/forexquote.jsp" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.table_list").FirstOrDefault()
+                .QuerySelectorAll("tbody").FirstOrDefault().QuerySelectorAll("tr")
+                .Select(t => new HB()
+                {
+                    hbmc = CurrencyAcronyms.缩写转货币名(t.QuerySelectorAll("td")[0].TextContent.Replace("CNY", "")),
+                    hbsx = "("+ t.QuerySelectorAll("td")[0].TextContent.Replace("CNY", "")+")",
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    mcj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xhzjj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/CEB/GetAllProducts")]
+        public List<CEB> CEB()
+        {
+            var cache = GetCacheObject<CEB>("CEB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.cebbank.com/eportal/ui?pageId=477257" });
+            HtmlParser htmlParser = new HtmlParser();
+            DateTime dt = DateTime.Now;
+            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.lczj_box").FirstOrDefault()
+                .QuerySelectorAll("tr").Where(t=>t.TextContent.IndexOf("货币")<0 && t.TextContent.IndexOf("购汇") < 0)
+                .Select(t => new CEB()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")),
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")).Substring(0, 2)),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    xhmcj= decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xcmcj= decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/CITICIB/GetAllProducts")]
+        public List<CITICIB> CITICIB()
+        {
+            var cache = GetCacheObject<CITICIB>("CITICIB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem(){URL = "https://etrade.citicbank.com/portalweb/cms/getForeignExchRate.htm", });
+            var jsonResult = JsonConvert.DeserializeObject<CITICIBRoot>(htmlResult.Html);
+            DateTime dateTime = DateTime.Now;
+            var result = jsonResult.content.resultList.Select(t => new CITICIB()
+            {
+                hbmc = t.curName,
+                hbsx = CurrencyAcronyms.getKHAcronyms(t.curName.Substring(0,2)),
+                xhmrj = decimal.Parse(t.cstexcBuyPrice),
+                xcmrj = decimal.Parse(t.cstpurBuyPrice),
+                xhmcj=decimal.Parse(t.cstexcSellPrice),
+                xcmcj=decimal.Parse(t.cstpurSellPrice),
+                zjj = decimal.Parse(t.midPrice),
+                updatetime = dateTime,
+            }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
+        }
+        [Route("api/SPDB/GetAllProducts")]
+        public List<SPDB> SPDB()
+        {
+            var cache = GetCacheObject<SPDB>("SPDB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            HttpHelper httpHelper = new HttpHelper();
+            var htmlResult = httpHelper.GetHtml(new HttpItem()
+            {
+                URL = "http://per.spdb.com.cn/was5/web/search",
+                Method = "POST",
+                Postdata = "metadata=CurrencyName%7CMdlPrc%7CBuyPrc%7CCashBuyPrc%7CSellPrc%7CCREATE_DATE&perpage=100&channelid=207567&searchword=",
+                ContentType = "application/x-www-form-urlencoded",
+            });
+            var jsonResult = JsonConvert.DeserializeObject<SPDBRoot>(htmlResult.Html);
+            DateTime dateTime = DateTime.Now;
+            var result = jsonResult.rows.Where(t=>t.CurrencyName.Length>2).Select(t => new SPDB()
+            {
+                hbmc = t.CurrencyName.Substring(0, t.CurrencyName.IndexOf(" ")),
+                hbsx = CurrencyAcronyms.getKHAcronyms(t.CurrencyName.Substring(0, t.CurrencyName.IndexOf(" ")).Substring(0,2)),
+                xhmrj = decimal.Parse(t.BuyPrc),
+                xcmrj = decimal.Parse(t.CashBuyPrc),
+                mcj=decimal.Parse(t.SellPrc),
+                zjj=decimal.Parse(t.MdlPrc),
+                updatetime = dateTime,
+            }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/BOB/GetAllProducts")]
         public List<BOB> BOB()

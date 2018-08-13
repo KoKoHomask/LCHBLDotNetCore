@@ -7,11 +7,10 @@ namespace LCHBLDotNetCore.Models.BankModels
 {
     public class CMBC:BaseBankModel
     {
-        public string hbmc { get; set; }
-        public string hbsx { get; set; }
+       
         public decimal xhmrj { get; set; }
         public decimal xhmcj { get; set; }
-        public DateTime updatetime { get; set; }
+       
     }
     public class ResultItem
     {

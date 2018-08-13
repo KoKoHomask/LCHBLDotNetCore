@@ -5,97 +5,95 @@ using System.Threading.Tasks;
 
 namespace LCHBLDotNetCore.Models.BankModels
 {
-    public class CCB : BaseBankModel
+    public class CITICIB : BaseBankModel
     {
-       
+        public decimal zjj { get; set; }
         public decimal xhmrj { get; set; }
         public decimal xhmcj { get; set; }
         public decimal xcmrj { get; set; }
         public decimal xcmcj { get; set; }
-       
     }
-    public class ReferencePriceSettlementItem
+    public class ResultListItem
+    {
+        /// <summary>
+        /// 2018年08月13日
+        /// </summary>
+        public string quotePriceDate { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string quotePriceTime { get; set; }
+        /// <summary>
+        /// 港币
+        /// </summary>
+        public string curName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string curCode { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string totalPidPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string totalSellPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string cstexcBuyPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string cstexcSellPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string cstpurBuyPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string cstpurSellPrice { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string midPrice { get; set; }
+    }
+
+    public class Content
     {
         /// <summary>
         /// 
         /// </summary>
-        public string name { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Ofrd_Ccy_CcyCd { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Ofr_Ccy_CcyCd { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string BidRateOfCash { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string OfrRateOfCash { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string BidRateOfCcy { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string OfrRateOfCcy { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string HBBnk_Bss_Buy_Prc { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string HBBnk_Bss_Sell_Prc { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Mdl_ExRt_Prc { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string LstPr_Dt { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string LstPr_Tm { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ExRt_StCd { get; set; }
+        public List<ResultListItem> resultList { get; set; }
     }
 
-    public class ReferencePriceSettlements
+    public class CITICIBRoot
     {
         /// <summary>
         /// 
         /// </summary>
-        public string ExRt_Ctlg_ID { get; set; }
+        public int totalCount { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public string ExRt_Ctlg_ShrtNm { get; set; }
+        public int pageCount { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public string CCBIns_ID { get; set; }
+        public string retCode { get; set; }
+        /// <summary>
+        /// 查询成功
+        /// </summary>
+        public string retMsg { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public List<ReferencePriceSettlementItem> ReferencePriceSettlement { get; set; }
+        public Content content { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string optFlag { get; set; }
     }
-
-    public class CCBRoot
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        public ReferencePriceSettlements ReferencePriceSettlements { get; set; }
-    }
-
 }
