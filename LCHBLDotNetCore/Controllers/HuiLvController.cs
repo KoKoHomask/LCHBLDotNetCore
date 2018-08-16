@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Xml;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace LCHBLDotNetCore.Controllers
 {
@@ -17,7 +20,7 @@ namespace LCHBLDotNetCore.Controllers
     public class HuiLvController : ControllerBase
     {
         [Route("api/exchangeRate/GetER")]
-        public List<AllHuiLv> GetER()
+        public async Task< List<AllHuiLv>> GetER()
         {
             List<AllHuiLv> lst = new List<AllHuiLv>();
             lst.Add(new AllHuiLv() { bankName = "建设银行", bankPoperty = CCB(), });
@@ -37,10 +40,11 @@ namespace LCHBLDotNetCore.Controllers
             lst.Add(new AllHuiLv() { bankName = "平安银行", bankPoperty = PABC(), });
             lst.Add(new AllHuiLv() { bankName = "兴业银行", bankPoperty = CIB(), });
             lst.Add(new AllHuiLv() { bankName = "丰瑞银行", bankPoperty = EVERGROWING(), });
+            lst.Add(new AllHuiLv() { bankName = "浙商银行", bankPoperty = await CZB(), });
             return lst;
         }
         [Route("api/CZB/GetAllProducts")]
-        public List<CZB> CZB()
+        public async Task<List<CZB>> CZB()
         {
             var cache = GetCacheObject<CZB>("CZB", 20);
             var data = cache.GetData();
@@ -54,27 +58,38 @@ namespace LCHBLDotNetCore.Controllers
             var getPostData = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("input").FirstOrDefault();
             string post = getPostData.GetAttribute("name") +"="+ getPostData.GetAttribute("value");
             string cookie = htmlResult.Cookie;
-            htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://perbank.czbank.com/PERBANK/WebBank",
-                Encoding = System.Text.Encoding.UTF8,Referer= "https://perbank.czbank.com/PERBANK/system/whpjInfoService_req_dispatch.jsp",
-                ContentType = "application/x-www-form-urlencoded",
-                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
-                Cookie = cookie, Method="post", Postdata=post });
+            StringContent fromurlcontent = new StringContent(post);
+            fromurlcontent.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            string htmlString = "";
+            using (HttpClient http = new HttpClient())
+            {
+                http.DefaultRequestHeaders.Add("Referer", "https://perbank.czbank.com/PERBANK/system/whpjInfoService_req_dispatch.jsp");
+                http.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0");
+                http.DefaultRequestHeaders.Add("Origin", "https://perbank.czbank.com");
+                http.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+                http.DefaultRequestHeaders.Add("DNT", "1");
+                http.DefaultRequestHeaders.Add("Cache-Control", "max-age=0");
+                http.DefaultRequestHeaders.Add("Cookie", cookie);
+                var responseMsg = await http.PostAsync(new Uri("https://perbank.czbank.com/PERBANK/WebBank"), fromurlcontent);
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                htmlString = await responseMsg.Content.ReadAsStringAsync();
+                
+            }
             DateTime dt = DateTime.Now;
-            //var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").LastOrDefault()
-            //    .QuerySelectorAll("tr")
-            //    .Select(t => new CZB()
-            //    {
-            //        hbmc = t.QuerySelectorAll("td")[0].TextContent,
-            //        hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, 2)),
-            //        xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
-            //        xhmrj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
-            //        xhmcj = decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
-            //        zjj = decimal.Parse(t.QuerySelectorAll("td")[5].TextContent),
-            //        updatetime = dt,
-            //    }).ToList();
-            //cache.AddData(result);//添加缓存
-            //return result;
-            return null;
+            var result = htmlParser.Parse(htmlString).QuerySelectorAll("table.result_table").LastOrDefault()
+                .QuerySelectorAll("tr").Where(t=>t.TextContent.IndexOf("中间价")<0)
+                .Select(t => new CZB()
+                {
+                    hbmc = CurrencyAcronyms.缩写转货币名(t.QuerySelectorAll("td")[0].TextContent.Replace("CNY", "")),
+                    hbsx = "("+ t.QuerySelectorAll("td")[0].TextContent.Replace("CNY", "")+")",
+                    zjj=decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xhmrj= decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    mcj= decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    xcmrj= decimal.Parse(t.QuerySelectorAll("td")[4].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/EVERGROWING/GetAllProducts")]
         public List<EVERGROWING> EVERGROWING()

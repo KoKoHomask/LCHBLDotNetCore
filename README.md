@@ -1,7 +1,7 @@
 # LCHBLDotNetCore
 银行汇率抓取<br />
 支持建行、农行、工行、中国银行、邮政储蓄的汇率抓取基础上新增了交通银行、民生银行、招商银行、<br />
-北京银行、浦发银行、中信银行、光大银行、华夏银行、广发银行、平安银行、恒丰银行、兴业银行 <br />
+北京银行、浦发银行、中信银行、光大银行、华夏银行、广发银行、平安银行、恒丰银行、兴业银行、浙商银行 <br />
 <h3>API:</h3>
 <h4>获取全部汇率</h4>
 /api/exchangeRateController/GetER
@@ -23,6 +23,6 @@
 /api/PABC/getallproducts<br />
 /api/CIB/getallproducts<br />
 /api/EVERGROWING/getallproducts<br />
+/api/CZB/getallproducts<br />
 
-添加浙商银行 遇到了阻力
 等待添加:   渤海银行
