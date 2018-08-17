@@ -41,7 +41,40 @@ namespace LCHBLDotNetCore.Controllers
             lst.Add(new AllHuiLv() { bankName = "兴业银行", bankPoperty = CIB(), });
             lst.Add(new AllHuiLv() { bankName = "丰瑞银行", bankPoperty = EVERGROWING(), });
             lst.Add(new AllHuiLv() { bankName = "浙商银行", bankPoperty = await CZB(), });
+            lst.Add(new AllHuiLv() { bankName = "渤海银行", bankPoperty = await CBHB(), });
             return lst;
+        }
+        [Route("api/CBHB/GetAllProducts")]
+        public async Task<List<CBHB>> CBHB()
+        {
+            var cache = GetCacheObject<CBHB>("CBHB", 20);
+            var data = cache.GetData();
+            if (data != null)
+                return data.Data;
+            string htmlString = "";
+            using (HttpClient http = new HttpClient())
+            {
+                http.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0");
+                var responseMsg = await http.GetAsync(new Uri("http://www.cbhb.com.cn/bhbank/admin/main?transName=exchange"));
+                htmlString = await responseMsg.Content.ReadAsStringAsync();
+
+            }
+            DateTime dt = DateTime.Now;
+            HtmlParser htmlParser = new HtmlParser();
+            var result = htmlParser.Parse(htmlString).QuerySelectorAll("table.dataTable").LastOrDefault()
+                .QuerySelectorAll("tbody").LastOrDefault()
+                .QuerySelectorAll("tr")
+                .Select(t => new CBHB()
+                {
+                    hbmc = t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")),
+                    hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("("))),
+                    xhmrj = decimal.Parse(t.QuerySelectorAll("td")[1].TextContent),
+                    xcmrj = decimal.Parse(t.QuerySelectorAll("td")[2].TextContent),
+                    mcj = decimal.Parse(t.QuerySelectorAll("td")[3].TextContent),
+                    updatetime = dt,
+                }).ToList();
+            cache.AddData(result);//添加缓存
+            return result;
         }
         [Route("api/CZB/GetAllProducts")]
         public async Task<List<CZB>> CZB()
@@ -71,7 +104,6 @@ namespace LCHBLDotNetCore.Controllers
                 http.DefaultRequestHeaders.Add("Cache-Control", "max-age=0");
                 http.DefaultRequestHeaders.Add("Cookie", cookie);
                 var responseMsg = await http.PostAsync(new Uri("https://perbank.czbank.com/PERBANK/WebBank"), fromurlcontent);
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 htmlString = await responseMsg.Content.ReadAsStringAsync();
                 
             }
