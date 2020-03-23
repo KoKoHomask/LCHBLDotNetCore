@@ -5,7 +5,7 @@
 浙商银行、渤海银行<br />
 <h3>API:</h3>
 <h4>获取全部汇率</h4>
-/api/exchangeRateController/GetER
+/api/exchangeRate/GetER
 <h4>获取单一银行汇率</h4>
 /api/abc/getallproducts<br />
 /api/boc/getallproducts<br />
