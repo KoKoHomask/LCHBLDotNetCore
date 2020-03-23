@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using AngleSharp.Parser.Html;
 using LCHBLDotNetCore.Models.BankModels;
 using LCHBLDotNetCore.Other;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +12,9 @@ using System.Xml;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using AngleSharp.Html.Parser;
+using JavaScriptEngineSwitcher.Core;
+using JavaScriptEngineSwitcher.ChakraCore;
 
 namespace LCHBLDotNetCore.Controllers
 {
@@ -26,13 +28,13 @@ namespace LCHBLDotNetCore.Controllers
             lst.Add(new AllHuiLv() { bankName = "建设银行", bankPoperty = CCB(), });
             lst.Add(new AllHuiLv() { bankName = "工商银行", bankPoperty = ICBC(), });
             lst.Add(new AllHuiLv() { bankName = "邮政银行", bankPoperty = PSBC(), });
-            lst.Add(new AllHuiLv() { bankName = "中国银行", bankPoperty = BOC(), });
+            lst.Add(new AllHuiLv() { bankName = "中国银行", bankPoperty = await BOC(), });
             lst.Add(new AllHuiLv() { bankName = "农业银行", bankPoperty = ABC(), });
             lst.Add(new AllHuiLv() { bankName = "交通银行", bankPoperty = BCM(), });
             lst.Add(new AllHuiLv() { bankName = "民生银行", bankPoperty = CMBC(), });
             lst.Add(new AllHuiLv() { bankName = "招商银行", bankPoperty = CMB(), });
             lst.Add(new AllHuiLv() { bankName = "北京银行", bankPoperty = BOB(), });
-            lst.Add(new AllHuiLv() { bankName = "浦发银行", bankPoperty = SPDB(), });
+            //lst.Add(new AllHuiLv() { bankName = "浦发银行", bankPoperty = SPDB(), });
             lst.Add(new AllHuiLv() { bankName = "中信银行", bankPoperty = CITICIB(), });
             lst.Add(new AllHuiLv() { bankName = "光大银行", bankPoperty = CEB(), });
             lst.Add(new AllHuiLv() { bankName = "华夏银行", bankPoperty = HB(), });
@@ -61,7 +63,7 @@ namespace LCHBLDotNetCore.Controllers
             }
             DateTime dt = DateTime.Now;
             HtmlParser htmlParser = new HtmlParser();
-            var result = htmlParser.Parse(htmlString).QuerySelectorAll("table.dataTable").LastOrDefault()
+            var result = htmlParser.ParseDocument(htmlString).QuerySelectorAll("table.dataTable").LastOrDefault()
                 .QuerySelectorAll("tbody").LastOrDefault()
                 .QuerySelectorAll("tr")
                 .Select(t => new CBHB()
@@ -88,7 +90,7 @@ namespace LCHBLDotNetCore.Controllers
                 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
                 Encoding =System.Text.Encoding.UTF8 });
             HtmlParser htmlParser = new HtmlParser();
-            var getPostData = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("input").FirstOrDefault();
+            var getPostData = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("input").FirstOrDefault();
             string post = getPostData.GetAttribute("name") +"="+ getPostData.GetAttribute("value");
             string cookie = htmlResult.Cookie;
             StringContent fromurlcontent = new StringContent(post);
@@ -108,7 +110,7 @@ namespace LCHBLDotNetCore.Controllers
                 
             }
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlString).QuerySelectorAll("table.result_table").LastOrDefault()
+            var result = htmlParser.ParseDocument(htmlString).QuerySelectorAll("table.result_table").LastOrDefault()
                 .QuerySelectorAll("tr").Where(t=>t.TextContent.IndexOf("中间价")<0)
                 .Select(t => new CZB()
                 {
@@ -134,7 +136,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.hfbank.com.cn/ucms/hfyh/jsp/gryw/whpj.jsp", });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").LastOrDefault()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tbody").LastOrDefault()
                 .QuerySelectorAll("tr")
                 .Select(t => new EVERGROWING()
                 {
@@ -188,7 +190,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://bank.pingan.com.cn/ibp/portal/exchange/qryExchangeList.do", });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.table").FirstOrDefault().QuerySelectorAll("tbody").FirstOrDefault()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("table.table").FirstOrDefault().QuerySelectorAll("tbody").FirstOrDefault()
                 .QuerySelectorAll("tr").Where(t => t.TextContent.IndexOf("����ȫ��") < 0 && t.TextContent.IndexOf("货币") < 0)
                 .Select(t => new PABC()
                 {
@@ -215,7 +217,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.cgbchina.com.cn/searchExchangePrice.gsp", Encoding= System.Text.Encoding.UTF8});
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").FirstOrDefault()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tbody").FirstOrDefault()
                 .QuerySelectorAll("tr").Where(t => t.TextContent.IndexOf("����ȫ��") < 0&& t.TextContent.IndexOf("货币") < 0)
                 .Select(t => new GDB()
                 {
@@ -242,7 +244,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "https://sbank.hxb.com.cn/gateway/forexquote.jsp" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.table_list").FirstOrDefault()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("table.table_list").FirstOrDefault()
                 .QuerySelectorAll("tbody").FirstOrDefault().QuerySelectorAll("tr")
                 .Select(t => new HB()
                 {
@@ -268,7 +270,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.cebbank.com/eportal/ui?pageId=477257" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.lczj_box").FirstOrDefault()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("table.lczj_box").FirstOrDefault()
                 .QuerySelectorAll("tr").Where(t=>t.TextContent.IndexOf("货币")<0 && t.TextContent.IndexOf("购汇") < 0)
                 .Select(t => new CEB()
                 {
@@ -309,20 +311,31 @@ namespace LCHBLDotNetCore.Controllers
             return result;
         }
         [Route("api/SPDB/GetAllProducts")]
-        public List<SPDB> SPDB()
+        public async Task<List<SPDB>> SPDB()
         {
             var cache = GetCacheObject<SPDB>("SPDB", 20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
+
             HttpHelper httpHelper = new HttpHelper();
             var htmlResult = httpHelper.GetHtml(new HttpItem()
             {
-                URL = "http://per.spdb.com.cn/was5/web/search",
+                URL = "https://per.spdb.com.cn/was5/web/search?channelid=256931",
                 Method = "POST",
                 Postdata = "metadata=CurrencyName%7CMdlPrc%7CBuyPrc%7CCashBuyPrc%7CSellPrc%7CCREATE_DATE&perpage=100&channelid=207567&searchword=",
                 ContentType = "application/x-www-form-urlencoded",
             });
+
+            //HttpClient client = new HttpClient();
+            //var str = await client.GetStringAsync("https://per.spdb.com.cn/was5/web/search?channelid=256931");
+            //var engineSwitcher = JsEngineSwitcher.Current;
+            //engineSwitcher.EngineFactories.Add(new ChakraCoreJsEngineFactory());
+            //engineSwitcher.DefaultEngineName = ChakraCoreJsEngine.EngineName;
+            //IJsEngine engine = JsEngineSwitcher.Current.CreateDefaultEngine();
+            //engine.ExecuteFile("wwwroot/js/test.js");
+            //engine.Execute(str);
+
             var jsonResult = JsonConvert.DeserializeObject<SPDBRoot>(htmlResult.Html);
             DateTime dateTime = DateTime.Now;
             var result = jsonResult.rows.Where(t=>t.CurrencyName.Length>2).Select(t => new SPDB()
@@ -349,7 +362,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.bankofbeijing.com.cn/personal/whpj.aspx" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody")
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tbody")
                 .Where(t => t.TextContent.IndexOf("现汇买入价") > 0).LastOrDefault().QuerySelectorAll("tr")
                 .Where(t => t.TextContent.IndexOf("现汇买入价") < 0)
                 .Select(t => new BOB()
@@ -376,7 +389,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://fx.cmbchina.com/hq/" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("table.data").FirstOrDefault().QuerySelectorAll("tr")
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("table.data").FirstOrDefault().QuerySelectorAll("tr")
                 .Where(t => t.TextContent.IndexOf("交易") < 0)
                 .Select(t => new CMB()
                  {
@@ -427,7 +440,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.bankcomm.com/BankCommSite/simple/cn/whpj/queryExchangeResult.do?type=simple" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tr.data").Select(t => new BCM()
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tr.data").Select(t => new BCM()
                 {
                     hbmc = t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")),
                     hbsx = CurrencyAcronyms.getKHAcronyms(t.QuerySelectorAll("td")[0].TextContent.Substring(0, t.QuerySelectorAll("td")[0].TextContent.IndexOf("(")).Substring(0,2)),
@@ -479,7 +492,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.psbc.com/cms/queryExchange.do" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tbody").
                 Where(t => t.TextContent.IndexOf("货币名称") > 0).LastOrDefault().QuerySelectorAll("tr").
                 Where(t => t.TextContent.IndexOf("货币名称") < 0).Take(7).Select(t => new PSBC()
                 {
@@ -505,7 +518,7 @@ namespace LCHBLDotNetCore.Controllers
             var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.icbc.com.cn/ICBCDynamicSite/Optimize/Quotation/QuotationListIframe.aspx" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").
+            var result = htmlParser.ParseDocument(htmlResult.Html).QuerySelectorAll("tbody").
                 Where(t => t.TextContent.IndexOf("币种") > 0).LastOrDefault().QuerySelectorAll("tr").
                 Where(t => t.TextContent.IndexOf("币种") < 0).Select(t => new ICBC()
                 {
@@ -521,17 +534,19 @@ namespace LCHBLDotNetCore.Controllers
             return result;
         }
         [Route("api/BOC/GetAllProducts")]
-        public List<BOC> BOC()
+        public async Task<List<BOC>> BOC()
         {
             var cache = GetCacheObject<BOC>("BOC",20);
             var data = cache.GetData();
             if (data != null)
                 return data.Data;
-            HttpHelper httpHelper = new HttpHelper();
-            var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.boc.cn/sourcedb/whpj/index.html" });
+            HttpClient httpClient = new HttpClient();
+            string body = await httpClient.GetStringAsync("http://www.boc.cn/sourcedb/whpj/index.html");
+            //HttpHelper httpHelper = new HttpHelper();
+            //var htmlResult = httpHelper.GetHtml(new HttpItem() { URL = "http://www.boc.cn/sourcedb/whpj/index.html" });
             HtmlParser htmlParser = new HtmlParser();
             DateTime dt = DateTime.Now;
-            var result = htmlParser.Parse(htmlResult.Html).QuerySelectorAll("tbody").
+            var result = htmlParser.ParseDocument(body).QuerySelectorAll("tbody").
                 Where(t => t.TextContent.IndexOf("货币名称") > 0).FirstOrDefault().QuerySelectorAll("tr").
                 Where(t => t.TextContent.IndexOf("货币名称") < 0).Select(t => new BOC()
                 {
